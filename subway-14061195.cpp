@@ -32,7 +32,7 @@ public:
 void dijkstra(string start, string end, vector<Station> all);
 void print(int destination, int origin, vector<Station> all);
 void cmdhandle(int argc, char *argv[], vector<Station> all);
-void setTransPortWeight(int weight, vector<Station> all);
+void setTransPortWeight(string start, string end, int weight, vector<Station> all);
 
 
 void dijkstra(string start, string end, vector<Station> all)
@@ -162,10 +162,10 @@ void print(int destination, int origin, vector<Station> all)
 		destination = all[destination].LastStation;
 
 	}while (destination != origin);
-	cout<<Path.size()<<endl; 
+	//cout<<Path.size()<<endl; 
 
-	for (int i = 0; i != Path.size(); i++)
-		cout << Path[i].Name << endl;
+//	for (int i = 0; i != Path.size(); i++)
+//		cout << Path[i].Name << endl;
 
 	reverse(Path.begin(), Path.end());
 	int PathNum = 0;
@@ -202,6 +202,7 @@ void print(int destination, int origin, vector<Station> all)
 					cout << Path[i].Name << endl;
 					break;
 				}
+				i--;
 				continue;
 			}
 		}
@@ -264,7 +265,7 @@ void cmdhandle(int argc, char *argv[], vector<Station> all)
 		{
 			if (temp[1] == "-b")
 			{
-				setTransPortWeight(0, all);
+				setTransPortWeight(temp[2],temp[3],0, all);
 
 				dijkstra(temp[2], temp[3], all);
 				//	continue;
@@ -272,7 +273,7 @@ void cmdhandle(int argc, char *argv[], vector<Station> all)
 			}
 			else if (temp[1] == "-c")
 			{
-				setTransPortWeight(1000, all);
+				setTransPortWeight(temp[2],temp[3],1000, all);
 				dijkstra(temp[2], temp[3], all);
 
 				//	continue;
@@ -315,7 +316,7 @@ void cmdhandle(int argc, char *argv[], vector<Station> all)
 
 }
 
-void setTransPortWeight(int weight, vector<Station> all)
+void setTransPortWeight(string start, string end, int weight, vector<Station> all)
 {
 	for (int i = 0; i != all.size(); i++)
 	{
@@ -323,11 +324,20 @@ void setTransPortWeight(int weight, vector<Station> all)
 		{
 			if (all[i].Name == all[j].Name)
 			{
+				if (all[i].Name == start || all[i].Name == end)
+				{
+					adj[i][j] = 0;
+					adj[j][i] = 0;
+					continue;//现在这样改有个问题,需要复原，首先，这样只会影响到换乘站。。然后，下次运行之前仍然需要更新，如果上次作为s\e
+							//的车站这次没有作为，即会被重新赋值为weight，另外，由于只处理当s、e为换乘站时的情况，其余换乘站照常，因此。。。理论上没有大问题
+				}
 				adj[i][j] = weight;
 				adj[j][i] = weight;
 			}
 		}
 	}
+	
+
 }
 int main(int argc, char *argv[])
 {
@@ -346,7 +356,10 @@ int main(int argc, char *argv[])
 	//	Station temp;
 	int LineHead = 0;
 	int flag = 0;
-
+	if (!ifs.is_open())
+	{
+		cout << "打开文件失败，程序终止！" << endl;
+	}
 	for (int i = 0; i<MAX; i++)
 		for (int j = 0; j<MAX; j++)
 		{
@@ -445,7 +458,7 @@ int main(int argc, char *argv[])
 		}
 
 	}
-	setTransPortWeight(0, all_station);
+	//setTransPortWeight(0, all_station);
 	//	for(int i = 0;i<Total_Stations;i++)
 	//	{
 	//		for(int j = 0;j<Total_Stations;j++)
